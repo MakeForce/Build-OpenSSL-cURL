@@ -167,8 +167,8 @@ do
 done
 
 if [ $count == 1 ];then
-	cp libsslPath iOS/lib/libssl.a
-	cp libcryptoPath iOS/lib/libcrypto.a
+	cp $libsslPath iOS/lib/libssl.a
+	cp $libcryptoPath iOS/lib/libcrypto.a
 else
 	lipo -create ${libsslPath}  -output iOS/lib/libssl.a
 	lipo -create ${libcryptoPath}  -output iOS/lib/libcrypto.a

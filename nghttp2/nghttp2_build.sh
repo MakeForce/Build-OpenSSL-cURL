@@ -162,7 +162,7 @@ do
 done
 
 if [ $count == 1 ];then
-	cp nghttp2Path iOS/lib//libnghttp2.a
+	cp $nghttp2Path iOS/lib//libnghttp2.a
 else
 	lipo -create ${nghttp2Path}  -output iOS/lib/libnghttp2.a
 fi

@@ -156,7 +156,7 @@ do
 done
 
 if [ $count == 1 ];then
-	cp libcurlPath iOS/lib/libcurl.a
+	cp $libcurlPath iOS/lib/libcurl.a
 else
 	lipo -create ${libcurlPath}  -output iOS/lib/libcurl.a
 fi

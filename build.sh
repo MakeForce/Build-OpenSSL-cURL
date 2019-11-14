@@ -30,8 +30,9 @@ if [ "$1" == "-h" ]; then
         usage
 fi
 
-archs="armv7 arm64"
-bitcode=""
+# archs="armv7 arm64"
+archs="x86_64"
+bitcode="disable"
 
 echo
 echo "Building OpenSSL"
