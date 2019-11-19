@@ -8,10 +8,15 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 
-archive
-curl/curl-*
-curl/iOS
-nghttp2/nghttp2-*
-nghttp2/iOS
-openssl/openssl-*
-openssl/iOS
+iOS/archive
+iOS/curl/curl-*
+iOS/curl/iOS
+iOS/nghttp2/nghttp2-*
+iOS/nghttp2/iOS
+iOS/openssl/openssl-*
+iOS/openssl/iOS
+
+Android/openssl/openssl-*
+Android/openssl/build/*
+Android/curl/curl-*
+Android/curl/build
