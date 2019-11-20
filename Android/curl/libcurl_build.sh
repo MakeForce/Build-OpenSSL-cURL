@@ -46,14 +46,14 @@ BASE_PATH=`pwd`
 
 mkdir -p build
 
-out_base="$BASE_PATH/build/"
+out_base="$BASE_PATH/build"
 
 OPENSSL="${PWD}/../openssl/build"
 
 build()
 {
 	ARCH=$1
-
+	mkdir -p "build/${ARCH}"
 	pushd . > /dev/null
 	cd "${CURL_VERSION}"
 
@@ -88,12 +88,12 @@ build()
 	export RANLIB=$TOOLCHAIN/bin/${tooL_name}-ranlib
 	export STRIP=$TOOLCHAIN/bin/${tooL_name}-stripb
 
-	./configure --host ${arch_tag} --with-pic --disable-shared --enable-static --disable-ldap --disable-ldaps --without-zlib  --prefix="${out_base}/${ARCH}" --with-ssl="${OPENSSL}/${ARCH}/openssl" #&> "${out_base}/${CURL_VERSION}-android-${ARCH}.log"
+	./configure --host ${arch_tag} --with-pic --disable-shared --enable-static --disable-ldap --disable-ldaps --without-zlib  --prefix="${out_base}/${ARCH}" --with-ssl="${OPENSSL}/${ARCH}" &> "${out_base}/${ARCH}/${CURL_VERSION}-android.log"
 
 
-	make -j4 #>> "${out_base}/${CURL_VERSION}-android-${ARCH}.log" 2>&1
-	make install #>> "${out_base}/${CURL_VERSION}-android-${ARCH}.log" 2>&1
-	make clean #>> "${out_base}/${CURL_VERSION}-android-${ARCH}.log" 2>&1
+	make -j4 >> "${out_base}/${ARCH}/${CURL_VERSION}-android.log" 2>&1
+	make install >> "${out_base}/${ARCH}/${CURL_VERSION}-android.log" 2>&1
+	make clean >> "${out_base}/${ARCH}/${CURL_VERSION}-android.log" 2>&1
 	popd > /dev/null
 }
 

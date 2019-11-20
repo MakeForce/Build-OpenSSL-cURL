@@ -16,6 +16,7 @@ iOS/nghttp2/iOS
 iOS/openssl/openssl-*
 iOS/openssl/iOS
 
+Android/archive
 Android/openssl/openssl-*
 Android/openssl/build/*
 Android/curl/curl-*

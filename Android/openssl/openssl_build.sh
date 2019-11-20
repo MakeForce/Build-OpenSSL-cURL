@@ -44,11 +44,12 @@ BASE_PATH=`pwd`
 
 mkdir -p build
 
-out_base="$BASE_PATH/build/"
+out_base="$BASE_PATH/build"
 
 build()
 {
 	ARCH=$1
+	mkdir -p "build/${ARCH}"
 	pushd . > /dev/null
 	cd "${OPENSSL_VERSION}"
 	if [[ "$ARCH" == "armeabi-v7a" || "$ARCH" == "armeabi" ]]; then
@@ -63,10 +64,10 @@ build()
 	
 	export ANDROID_NDK_HOME="${NDK}"
 	PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/darwin-x86_64/bin:$PATH
-	./Configure android-${arch_name} -no-shared -no-pic -D__ANDROID_API__=23 --prefix="${out_base}/${ARCH}/openssl" #&> "${out_base}/${OPENSSL_VERSION}-android-${ARCH}.log"
-	make -j4 #>> "${out_base}/${OPENSSL_VERSION}-android-${ARCH}.log" 2>&1
-	make install #>> "${out_base}/${OPENSSL_VERSION}-android-${ARCH}.log" 2>&1
-	make clean #>> "${out_base}/${OPENSSL_VERSION}-android-${ARCH}.log" 2>&1
+	./Configure android-${arch_name} -no-shared -no-pic no-asm -D__ANDROID_API__=23 --prefix="${out_base}/${ARCH}" --openssldir="${out_base}/${ARCH}" &> "${out_base}/${ARCH}/${OPENSSL_VERSION}-android.log"
+	make -j4 >> "${out_base}/${ARCH}/${OPENSSL_VERSION}-android.log" 2>&1
+	make install >> "${out_base}/${ARCH}/${OPENSSL_VERSION}-android.log" 2>&1
+	make clean >> "${out_base}/${ARCH}/${OPENSSL_VERSION}-android.log" 2>&1
 	popd > /dev/null
 }
 
@@ -92,6 +93,7 @@ tar xfz "${OPENSSL_VERSION}.tar.gz"
 
 for arch in $archs
 do
+	echo "         Building ${OPENSSL_VERSION} for ${arch}"
 	build "${arch}"
 done
 
@@ -99,3 +101,5 @@ done
 trap - INT TERM EXIT
 
 echo "Done"
+
+#./openssl_build.sh 1.1.1d armeabi-v7a ~/Library/Developer/Android/ndk/android-ndk-r20
