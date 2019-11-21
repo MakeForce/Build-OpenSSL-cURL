@@ -19,5 +19,6 @@ iOS/openssl/iOS
 Android/archive
 Android/openssl/openssl-*
 Android/openssl/build/*
+Android/toolschain
 Android/curl/curl-*
 Android/curl/build

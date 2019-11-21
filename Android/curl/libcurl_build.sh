@@ -37,63 +37,70 @@ if [ ! ${NDK_PATH} ]; then
 	exit
 fi
 
-
-export NDK=${NDK_PATH}
-export HOST_TAG="darwin-x86_64"
-export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/$HOST_TAG
-
 BASE_PATH=`pwd`
 
+rm -rf build
 mkdir -p build
 
-out_base="$BASE_PATH/build"
+BASE_PATH=$BASE_PATH/build
 
-OPENSSL="${PWD}/../openssl/build"
+OPENSSL_BASE="${PWD}/../openssl/build"
+TOOLCHAIN_BASE="${PWD}/../toolschain"
+
+export NDK=$NDK_PATH
+export HOST_TAG=darwin-x86_64
 
 build()
 {
 	ARCH=$1
-	mkdir -p "build/${ARCH}"
+
+	mkdir -p build/$ARCH/usr
+	mkdir -p build/$ARCH/logs
+
+	OUT_PATH="$BASE_PATH/$ARCH/usr"
+	LOGS_PATH="$BASE_PATH/$ARCH/logs"
+
 	pushd . > /dev/null
-	cd "${CURL_VERSION}"
-
-	if [ "$ARCH" == "armeabi" ]; then
-		arch_tag="arm-linux-androideabi"
-		tooL_name="arm-linux-androideabi"
-	elif [ "$ARCH" == "armeabi-v7a" ]; then
-		arch_tag="armv7a-linux-androideabi"
-		tooL_name="arm-linux-androideabi"
+	
+	if [ "$ARCH" == "armeabi-v7a" ]; then
+		ARCH_TAG="arm-linux-androideabi"
 	elif [ "$ARCH" == "arm64-v8a" ]; then
-		arch_tag="aarch64-linux-android"
-		tooL_name="aarch64-linux-android"
+		ARCH_TAG="aarch64-linux-android"
 	elif [ "$ARCH" == "x86" ]; then
-		arch_tag="i686-linux-android"
-		tooL_name="i686-linux-android"
+		ARCH_TAG="i686-linux-android"
 	else
-		arch_tag="x86_64-linux-android"
-		tooL_name="x86_64-linux-android"
+		ARCH_TAG="x86_64-linux-android"
 	fi
 
-	export AR=$TOOLCHAIN/bin/${tooL_name}-ar
-	export AS=$TOOLCHAIN/bin/${tooL_name}-as
-	if [ "${tooL_name}" == "arm-linux-androideabi" ]; then
-		export CC=$TOOLCHAIN/bin/armv7a-linux-androideabi23-clang
-		export CXX=$TOOLCHAIN/bin/armv7a-linux-androideabi23-clang++
-	else
-		export CC=$TOOLCHAIN/bin/${tooL_name}23-clang
-		export CXX=$TOOLCHAIN/bin/${tooL_name}23-clang++
-	fi
-	export LD=$TOOLCHAIN/bin/${tooL_name}-ld
-	export NM==$TOOLCHAIN/bin/${tooL_name}-nm
-	export RANLIB=$TOOLCHAIN/bin/${tooL_name}-ranlib
-	export STRIP=$TOOLCHAIN/bin/${tooL_name}-stripb
+	OPENSSL=$OPENSSL_BASE/$ARCH/usr
+	
+	export TOOLCHAIN="${TOOLCHAIN_BASE}/$ARCH"
+	export AR=$TOOLCHAIN/bin/$ARCH_TAG-ar
+	export AS=$TOOLCHAIN/bin/$ARCH_TAG-as
+	export CC=$TOOLCHAIN/bin/$ARCH_TAG-clang
+	export CXX=$TOOLCHAIN/bin/$ARCH_TAG-clang++
+	# export CC=$TOOLCHAIN/bin/$ARCH_TAG-gcc
+	# export CC=$TOOLCHAIN/bin/$ARCH_TAG-g++
+	export LD=$TOOLCHAIN/bin/$ARCH_TAG-ld
+	export NM=$TOOLCHAIN/bin/$ARCH_TAG-nm
+	export RANLIB=$TOOLCHAIN/bin/$ARCH_TAG-ranlib
+	export STRIP=$TOOLCHAIN/bin/$ARCH_TAG-strip
 
-	./configure --host ${arch_tag} --with-pic --disable-shared --enable-static --disable-ldap --disable-ldaps --without-zlib  --prefix="${out_base}/${ARCH}" --with-ssl="${OPENSSL}/${ARCH}" &> "${out_base}/${ARCH}/${CURL_VERSION}-android.log"
+	cd "${CURL_VERSION}"
+	./configure --host $ARCH_TAG \
+				--with-pic \
+				--disable-shared \
+				--enable-static \
+				--disable-ldap --disable-ldaps \
+				--without-zlib  \
+				--prefix="${OUT_PATH}" \
+				--with-ssl="${OPENSSL}" \
+				&> "$LOGS_PATH/configure_${CURL_VERSION}.log"
 
 
-	make -j4 >> "${out_base}/${ARCH}/${CURL_VERSION}-android.log" 2>&1
-	make install >> "${out_base}/${ARCH}/${CURL_VERSION}-android.log" 2>&1
-	make clean >> "${out_base}/${ARCH}/${CURL_VERSION}-android.log" 2>&1
+	make -j4 >> "$LOGS_PATH/build_${CURL_VERSION}.log" 2>&1
+	make install >> "$LOGS_PATH/install_${CURL_VERSION}.log" 2>&1
+	make clean >> "$LOGS_PATH/clean_${CURL_VERSION}.log" 2>&1
 	popd > /dev/null
 }
 
@@ -109,6 +116,7 @@ tar xfz "${CURL_VERSION}.tar.gz"
 
 for arch in $archs
 do
+	echo "         Building ${CURL_VERSION} for ${arch}"
 	build "${arch}"
 done
 

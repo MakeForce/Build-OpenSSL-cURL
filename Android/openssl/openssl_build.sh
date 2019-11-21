@@ -1,13 +1,8 @@
 #!/bin/bash
 
-set -e
-
-# set trap to help debug build errors
-trap 'echo "** ERROR with Build - Check openssl*.log"; tail openssl*.log' INT TERM EXIT
-
 usage ()
 {
-	echo "usage: $0 [openssl version] [archs (defaults to \"armeabi armeabi-v7a arm64-v8a x86 x86_64\")] [NDK path]"
+	echo "usage: $0 [openssl version] [archs (defaults to \"armeabi-v7a arm64-v8a x86 x86_64\")] [NDK path]"
 	trap - INT TERM EXIT
 	exit 127
 }
@@ -23,7 +18,7 @@ else
 fi
 
 if [ -z "$2" ]; then
-    archs="armeabi armeabi-v7a arm64-v8a x86 x86_64"
+    archs="armeabi-v7a arm64-v8a x86 x86_64"
 else
     archs="$2"
 fi
@@ -37,37 +32,51 @@ if [ ! ${NDK_PATH} ]; then
 	exit
 fi
 
-
-export NDK=${NDK_PATH}
-
 BASE_PATH=`pwd`
 
+rm -rf build
 mkdir -p build
 
-out_base="$BASE_PATH/build"
+BASE_PATH=$BASE_PATH/build
 
 build()
 {
 	ARCH=$1
-	mkdir -p "build/${ARCH}"
+	
+	mkdir -p build/$ARCH/usr
+	mkdir -p build/$ARCH/logs
+
+	OUT_PATH="$BASE_PATH/$ARCH/usr"
+	LOGS_PATH="$BASE_PATH/$ARCH/logs"
+
 	pushd . > /dev/null
-	cd "${OPENSSL_VERSION}"
-	if [[ "$ARCH" == "armeabi-v7a" || "$ARCH" == "armeabi" ]]; then
+	if [ "$ARCH" == "armeabi-v7a" ]; then
 		arch_name="arm"
+		ARCH_TAG=arm-linux-androideabi
 	elif [ "$ARCH" == "arm64-v8a" ]; then
 		arch_name="arm64"
+		ARCH_TAG=aarch64-linux-android
 	elif [ "$ARCH" == "x86" ]; then
 		arch_name="x86"
+		ARCH_TAG=x86
 	else
 		arch_name="x86_64"
+		ARCH_TAG=x86_64
 	fi
+
+	export ANDROID_NDK_HOME=$NDK_PATH
+	PATH=$ANDROID_NDK_HOME/toolchains/$ARCH_TAG-4.9/prebuilt/darwin-x86_64/bin:$PATH
+
+	cd "${OPENSSL_VERSION}"
+	./Configure android-${arch_name} \
+				-D__ANDROID_API__=21 \
+				--prefix="$OUT_PATH" \
+				--openssldir="$OUT_PATH/openssl" \
+				&> "$LOGS_PATH/configure_$OPENSSL_VERSION.log"
 	
-	export ANDROID_NDK_HOME="${NDK}"
-	PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/darwin-x86_64/bin:$PATH
-	./Configure android-${arch_name} -no-shared -no-pic no-asm -D__ANDROID_API__=23 --prefix="${out_base}/${ARCH}" --openssldir="${out_base}/${ARCH}" &> "${out_base}/${ARCH}/${OPENSSL_VERSION}-android.log"
-	make -j4 >> "${out_base}/${ARCH}/${OPENSSL_VERSION}-android.log" 2>&1
-	make install >> "${out_base}/${ARCH}/${OPENSSL_VERSION}-android.log" 2>&1
-	make clean >> "${out_base}/${ARCH}/${OPENSSL_VERSION}-android.log" 2>&1
+	make -j4 >> "$LOGS_PATH/build_$OPENSSL_VERSION.log" 2>&1
+	make install >> "$LOGS_PATH/install_$OPENSSL_VERSION.log" 2>&1
+	make clean >> "$LOGS_PATH/clean_$OPENSSL_VERSION.log" 2>&1
 	popd > /dev/null
 }
 
@@ -94,12 +103,8 @@ tar xfz "${OPENSSL_VERSION}.tar.gz"
 for arch in $archs
 do
 	echo "         Building ${OPENSSL_VERSION} for ${arch}"
-	build "${arch}"
+	build ${arch}
 done
 
-#reset trap
-trap - INT TERM EXIT
 
 echo "Done"
-
-#./openssl_build.sh 1.1.1d armeabi-v7a ~/Library/Developer/Android/ndk/android-ndk-r20

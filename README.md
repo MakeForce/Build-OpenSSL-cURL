@@ -6,9 +6,9 @@ Copy from https://github.com/jasonacox/Build-OpenSSL-
 
 ## Android
 
-需要指定NDK的路径，注意目前只能使用20.0及其以上的版本  
+需要指定NDK的路径，测试版本为NDK16B，其他的NDK版本为测试  
 注：__暂不支持HTTP2__   
-eg：`./build.sh ~/Library/Developer/Android/ndk/android-ndk-r20`
+eg：`./build.sh ~/Library/Developer/Android/ndk/android-ndk-r16b`
 
 ## iOS
 
