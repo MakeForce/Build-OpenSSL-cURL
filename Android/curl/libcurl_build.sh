@@ -47,7 +47,7 @@ BASE_PATH=$BASE_PATH/build
 OPENSSL_BASE="${PWD}/../openssl/build"
 TOOLCHAIN_BASE="${PWD}/../toolschain"
 
-export NDK=$NDK_PATH
+# export NDK=$NDK_PATH
 export HOST_TAG=darwin-x86_64
 
 build()
@@ -73,7 +73,8 @@ build()
 	fi
 
 	OPENSSL=$OPENSSL_BASE/$ARCH/usr
-	
+	export NDK="${TOOLCHAIN_BASE}/$ARCH"
+	PATH=$ANDROID_NDK_HOME/bin:$PATH
 	export TOOLCHAIN="${TOOLCHAIN_BASE}/$ARCH"
 	export AR=$TOOLCHAIN/bin/$ARCH_TAG-ar
 	export AS=$TOOLCHAIN/bin/$ARCH_TAG-as

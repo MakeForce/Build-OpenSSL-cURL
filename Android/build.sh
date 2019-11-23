@@ -3,11 +3,12 @@
 OPENSSL="1.1.1d"	# https://www.openssl.org/source/
 LIBCURL="7.66.0"	# https://curl.haxx.se/download.html
 
-archs="armeabi-v7a arm64-v8a x86 x86_64"
-# archs="armeabi-v7a"
+# archs="armeabi-v7a arm64-v8a x86 x86_64"
+archs="armeabi-v7a"
 
 if [ "$1" == "" ]; then
     echo "need configure NDK_ROOT"
+    # ANDROID_NDK_HOME NDK_ROOT NDK
     exit
 else
     NDK_PATH="$1"
@@ -28,7 +29,7 @@ creatToolschain()
 	fi
     $NDK_PATH/build/tools/make_standalone_toolchain.py \
         --arch $arch_tag \
-        --api 21 \
+        --api 14 \
         --install-dir toolschain/$ARCH
 }
 
@@ -40,17 +41,17 @@ if [ ! -d "toolschain" ];then
     done
 fi
 
-# echo
-# echo "Building OpenSSL"
-# cd openssl 
-# ./openssl_build.sh "$OPENSSL" "$archs" "$NDK_PATH"
-# cd ..
+echo
+echo "Building OpenSSL"
+cd openssl 
+./openssl_build.sh "$OPENSSL" "$archs" "$NDK_PATH"
+cd ..
 
-# echo
-# echo "Building Curl"
-# cd curl
-# ./libcurl_build.sh "$LIBCURL" "$archs" ${NDK_PATH}
-# cd ..
+echo
+echo "Building Curl"
+cd curl
+./libcurl_build.sh "$LIBCURL" "$archs" ${NDK_PATH}
+cd ..
 
 echo "     create archive"
 ARCHIVE="archive/libcurl-$LIBCURL-openssl-$OPENSSL"

@@ -38,6 +38,7 @@ rm -rf build
 mkdir -p build
 
 BASE_PATH=$BASE_PATH/build
+TOOLCHAIN_BASE="${PWD}/../toolschain"
 
 build()
 {
@@ -64,15 +65,51 @@ build()
 		ARCH_TAG=x86_64
 	fi
 
+	# NDK_r16b 编译方式
+
 	export ANDROID_NDK_HOME=$NDK_PATH
 	PATH=$ANDROID_NDK_HOME/toolchains/$ARCH_TAG-4.9/prebuilt/darwin-x86_64/bin:$PATH
 
 	cd "${OPENSSL_VERSION}"
 	./Configure android-${arch_name} \
-				-D__ANDROID_API__=21 \
+				-D__ANDROID_API__=14 \
 				--prefix="$OUT_PATH" \
 				--openssldir="$OUT_PATH/openssl" \
 				&> "$LOGS_PATH/configure_$OPENSSL_VERSION.log"
+
+	# NDK toolchain 编译方式
+
+	# export ANDROID_NDK_HOME="${TOOLCHAIN_BASE}/$ARCH"
+	# PATH=$ANDROID_NDK_HOME/bin:$PATH
+
+	# cd "${OPENSSL_VERSION}"
+	# ./Configure android-${arch_name} \
+	# 			--prefix="$OUT_PATH" \
+	# 			&> "$LOGS_PATH/configure_$OPENSSL_VERSION.log"
+	
+	# openssl-OpenSSL_1_0_2p toolchain 编译方式
+
+	# TOOLCHAIN="${TOOLCHAIN_BASE}/$ARCH"
+	# PATH=$TOOLCHAIN/bin:$PATH
+	# export AR=$TOOLCHAIN/bin/${ARCH_TAG}-ar
+	# export AS=$TOOLCHAIN/bin/${ARCH_TAG}-as
+	# export CC=$TOOLCHAIN/bin/${ARCH_TAG}-gcc
+	# export CXX=$TOOLCHAIN/bin/${ARCH_TAG}-g++
+	# # export CPP=$TOOLCHAIN/bin/${ARCH_TAG}-c++
+	# export LD=$TOOLCHAIN/bin/${ARCH_TAG}-ld
+	# export NM==$TOOLCHAIN/bin/${ARCH_TAG}-nm
+	# export RANLIB=$TOOLCHAIN/bin/${ARCH_TAG}-ranlib
+	# export STRIP=$TOOLCHAIN/bin/${ARCH_TAG}-stripb
+
+	# tar xfz openssl-OpenSSL_1_0_2p.tar.gz
+
+	# cd openssl-OpenSSL_1_0_2p
+
+	# ./Configure android-armv7 \
+	#             -D__ANDROID_API__=14 \
+	#             --prefix="${OUT_PATH}" \
+	#             --openssldir=${OUT_PATH}/openssl \
+	#             &> "${LOGS_PATH}/configure_openssl.log"
 	
 	make -j4 >> "$LOGS_PATH/build_$OPENSSL_VERSION.log" 2>&1
 	make install >> "$LOGS_PATH/install_$OPENSSL_VERSION.log" 2>&1
@@ -106,5 +143,6 @@ do
 	build ${arch}
 done
 
+rm -rf ${OPENSSL_VERSION}
 
 echo "Done"
